@@ -13,3 +13,48 @@ spec:
   selector:
     app: nginx01
   type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx01
+  name: lbsvc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx01
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx01
+  name: nlbsvc
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    name: http  
+  selector:
+    app: nginx01
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mygoogle  
+spec:
+  type: ExternalName
+  externalName: www.google.com
+
