@@ -1,0 +1,148 @@
+Route 53 : DNS host servers
+ns-1607.awsdns-08.co.uk.
+ns-1478.awsdns-56.org.
+ns-651.awsdns-17.net.
+ns-33.awsdns-04.com.
+
+
+===================================
+
+
+kops create cluster --name=aishwaryarajbattula-k8s.xyz \
+--state=s3://aishwaryarajbattula3-k8s.xyz --zones=us-east-1a,us-east-1b \
+--node-count=2 --master-count=1 --node-size=t3.medium --master-size=t3.medium \
+--master-zones=us-east-1a --master-volume-size 10 --node-volume-size 10 \
+--dns-zone=aishwaryarajbattula-k8s.xyz --dry-run --output yaml
+
+export NAME=aishwaryarajbattula-k8s.xyz
+export KOPS_STATE_STORE=s3://aishwaryarajbattula3-k8s.xyz
+export AWS_REGION=us-east-1
+export CLUSTER_NAME=aishwaryarajbattula-k8s.xyz
+
+***using raft consensus algorithm (N-1)/2, we can place no.of masters in the cluster
+
+Kubectl bash completion:
+echo 'source <(kubectl completion bash)' >>~/.bashrc
+echo 'alias ku=kubectl' >>~/.bashrc
+echo 'complete -F __start_kubectl ku' >>~/.bashrc
+
+kops get cluster --state s3://devopsk8s.xyz
+kops get ig --name devopsk8s.xyz --state s3://devopsk8s.xyz
+kops edit ig --name=devopsk8s.xyz master-us-east-1a --state s3://devopsk8s.xyz
+kops edit ig --name=devopsk8s.xyz nodes --state s3://devopsk8s.xyz
+kops delete ig --name=aishwaryarajbattula-k8s.xyz node-us-east-1a --yes
+kops update cluster --name devopsk8s.xyz --yes --state  s3://devopsk8s.xyz
+kops rolling-update cluster  --name devopsk8s.xyz --yes --state  s3://devopsk8s.xyz
+kops delete cluster --name=aishwaryarajbattula-k8s.xyz --state s3://aishwaryarajbattula3-k8s.xyz --yes
+
+Cluster Smoke Testing:
+kubectl version --short
+kubectl get nodes
+kubectl cluster-info
+kubectl get ns
+kubectl get pods
+kubectl get pods -n kube-system
+kubectl get service -A
+kubectl run pod01 --image=sreeharshav/rollingupdate:v5
+kubectl expose pod pod01 --port=8000 --target-port=80 --type=NodePort
+kubectl get pods -o wide
+kubectl get pods -o wide --no-headers
+kubectl create deployment deploy01 --image=sreeharshav/rollingupdate:v5 --dry-run -o yaml
+
+
+kops validate cluster --wait 10m
+
+kops get ig
+
+kops edit ig <instance>
+
+kops update cluster --yes
+
+kops delete cluster --name <clustername> --yes
+
+cat .kube/config
+
+alias ku=kubectl
+
+ku get ns
+
+ku get nodes
+ku get pods -n <namespace>
+===========================================================================
+ kubectl run testpod1 --image=nginx:latest --dry-run -o yaml
+ 
+ or
+ 
+  echo 'apiVersion: v1
+> kind: Pod
+> metadata:
+>   labels:
+>     run: testpod2
+>   name: testpod2
+> spec:
+>   containers:
+>   - image: nginx:latest
+>     name: testpod2
+>   ' | kubectl apply -f -
+
+alias ku=kubectl
+ku get po -o wide
+
+-----------------------------------
+
+To connect PODs without services, we require port forwarding from cli
+
+kubectl port-forward testpod2 8000:80
+
+To check the same through GUI, we need to use  "kube forwarder" software. this software require .kube/config file
+
+----------------------------------------
+
+To check logs :
+ kubectl logs testpod1 --follow
+ 
+----------------------------------------
+
+To execute from POD :
+
+kubectl exec -it testpod1 -- bash
+
+------------------------------------------
+***interview***
+ReplicaSet(latest) vs Replication Controller(legacy)
+[set based selectors]      [equality based selectors]
+
+Ex on ReplicaSet :
+	selector:
+		matchLabels:
+			env: prod
+		matchExpressions:
+		- { key: tier, operator: In, values: [frontend]}
+
+
+Ex on ReplicationController :
+	labels:
+		app: nginx
+		tier: dev
+		
+ku get po -l tier=frontend
+ku delete pod $(ku get po -l tier=frontend --no-headers | cut -d " " -f1)
+
+drawback of RS :
+
+If anything is updated in replicaset defination (image is changed), pods that will not roll out automatically. This will overcome in deployment
+----------------------------------------------------------
+
+kubectl create deploy nginx01 --image=sreeharshav/rollingupdate:v1 --replicas 6 --dry-run -o yaml
+ku expose deployment nginx01 --port=8000 --target-port=80 --type=NodePort
+ku get svc
+ku edit deployments.apps nginx01
+ku describe deplo.apps nginx01
+ku set image deployment nginx01 rollingupdate(containername)=sreeharshav/rollingupdate:v5  --record=true
+ku rollout history deployment nginx01
+
+Deployments :
+ MaxSurge : 
+	spec->strategy-> type=RollingUpdate-> maxSurgeku: 2
+ MaxUnavailable :
+	spec->strategy-> type=RollingUpdate-> MaxUnavailable: 2

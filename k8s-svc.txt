@@ -1,0 +1,12 @@
+k8s-services :
+==============
+
+Cluster IP
+
+NodePort
+
+LoadBalancer
+
+External Name
+
+Headless Service
