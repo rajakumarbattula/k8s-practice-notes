@@ -1,12 +1,25 @@
 k8s-services :
 ==============
 
-Cluster IP
+Cluster IP  : default service. IP reachable from inside the cluster only.
 
-NodePort
+ku expose deployment nginx01 --port=80 --target-port=80 --dry-run -o yaml
 
-LoadBalancer
+NodePort : An ephermal port between 30000 to 32000 opened at the host level (not used in production).
 
-External Name
+ku expose deployment nginx01 --name nodeportsvc --port=80 --target-port=80 --type=NodePort --dry-run -o yaml
 
-Headless Service
+LoadBalancer : Deploy a external LB ex : AWS NLB
+
+ku expose deployment nginx01 --name nodeportsvc --port=80 --target-port=80 --type=LoadBalancer --dry-run -o yaml  --> deploys external classic LB in AWS
+
+External Name : Reference to a database which is outside of the k8s
+
+Headless Service : Needed when we use StatefullSet. ( spec->ClusterIP: None)It shows backend IP's
+
+
+--------------------------------------------------------
+
+ku expose deployment nginx01 --port=80 --target-port=80  --> when we excute this by default ClusterIP service will be used. Our application can't be used externally
+ku get svc
+
