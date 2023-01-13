@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx01
+  name: nginx01
+spec:
+  minReadySeconds: 30
+  strategy:    
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx01
+  template:
+    metadata:
+      labels:
+        app: nginx01
+    spec:
+      containers:
+      - image: sreeharshav/rollingupdate:v1
+        name: rollingupdate

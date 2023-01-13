@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: testpod2
+  name: testpod2
+spec:
+  containers:
+  - image: nginx:latest
+    name: testpod2
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: testpod3
+  name: testpod3
+spec:
+  containers:
+  - image: nginx:latest
+    name: testpod3
+  
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: testpod4
+  name: testpod4
+spec:
+  containers:
+  - image: nginx:latest
+    name: testpod4
+  
