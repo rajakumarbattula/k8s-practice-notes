@@ -1,0 +1,108 @@
+Helm Important points :
+
+1. What is helm ?
+
+Helm is packaging manager for applications deployed to k8s-cluster. It uses helm charts to deploy application in k8s cluster. 
+Chart includes templates for the  k8s resources with dafault values.
+
+	helm install apache bitnami/apache --namespace=web
+	helm upgrade apache bitnami/apache --namespace=web
+	helm rollback apache 1 --namespace=web
+	helm uninstall apache
+	
+2. why should we use helm or advantages of using helm ?
+
+	1. helm simplies k8s deployment process ( earlier manually write templates to deploy resources to the cluster)
+	2. helm maintains the revision history
+	3. Dynamic configuration : Helm charts will have templates with default place holders values. We can always override the placeholders by having 
+		values.yaml file with values required to override the default place holder values.
+	4. Consistency : As we are deploying resources through charts with values.yaml file. cluster state is always consistent with values inside the chart.
+	5. Intelligent Deployments : Intelligently order the resources while deploying in the cluster.
+		configmap.yml -> secrets.yml -> deployment.yml -> service.yml
+	6. Helm also allows us to write custom hooks. We can react to the events happening in the helm during installation or 
+		upgrading our application like adding data to the database or backing up the data to the database.
+	7. Helm is secured by using encryption and signature to secure the charts.
+3. Important helm commands.
+	helm repo list
+	helm repo add
+	helm search repo
+	helm repo remove
+	
+	helm install mydb bitnami/mysql
+	helm status mydb
+	helm list
+	helm list --namespace demo
+	helm uninstall demo
+	
+	helm repo update
+	helm upgrade mydb --values Values.yaml
+	
+	helm --dry-run
+	
+	helm template
+	
+	helm history
+	helm rollback 3  --> to rollback the particular release
+	
+4. Can you the workflow when we execute helm install or helm release
+
+	Ex. helm install mydb bitnami/mysql
+	
+	- Load the chart and its dependencies
+	- Parse the values.yml
+	- Generate the yaml
+	- Parse the YAML to kube objects and validate
+	- Generate YAML and send to kube
+
+5. How do we create a helm chart. Can you talk the structure and important files of helm chart ?
+		
+	1. we create helm chart by `helm create` command
+	2. The first and the important file is the Chart.yaml file. which will have all chart information.
+	3. Next template directory, which can have templates for the k8s resources with dafault values (placeholders)
+	4. Those default place holder values are dynamically replaced by values from the values.yaml file.
+	5. If we have any dependency charts. Those dependencies are defined in the chart.yaml file under dependencies section. Those dependenciesare pulled and packaged and placed under the charts directory.
+	6. We can package our entire package by executing `helm package` command
+
+6. What are the different types of helm repositories ?
+	
+	Local repository :
+	GitHub pages :
+	OCI (Oracle Cloud Infrastructure) registries :
+
+7. What are helm hooks ?
+
+	Hook allows us to hook in to the lifecycle of helm. When a release happends, we can execute certain logic like loading data in to the database, backing up a db or we can do anything we wanted to execute before a release or a after a release.
+	like pre-install, post-install, pre-uninstall or post-uninstall.
+	ex : 
+			metadata:
+				name: ""
+				annotations:
+					"helm.sh/hook": pre-install
+					"helm.sh/hook-weight": "1" ==>> it is high priority
+					.
+					.
+					.
+8. What are helm plugins and how do we create and use them ?
+
+	- Helm plugins are used to extend ot customize the functionality of helm.
+	- To create a helm plugin, we require plugin.yaml file
+	- Sample plugin.yaml file
+			name: "myplugin"
+			version: "1.0.0"
+			description: "my first custom plugin"
+			usage: "helm myplugin"
+			command: "echo The plugin $HELM_PLUGIN_NAME is located in $HELM_PLUGIN_DIR"
+			# above command will be excuted when we invoke our plugin. 
+			# above command is written in shell. we can also use jave or python code
+	- useful commands related to the plugins :
+		helm plugin list
+		helm plugin install
+		helm plugin help
+		helm plugin update
+
+9. What are helm starters ?
+
+	- Depending on kind of the application (java, python, spring boot and mysql) which we are deploying in k8s cluster, we can pick a partcular "starter" which is already there.
+	- We can also quickly convert an existing chart in to starter and distribute it across the organization for your in the opensource world.
+	
+	

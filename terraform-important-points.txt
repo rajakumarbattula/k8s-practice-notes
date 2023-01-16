@@ -1,0 +1,91 @@
+1. How to deploy infrastructure as a code using Terraform.
+
+	-> create your terraform script Ex. I want to deploy a image from docker hub (locally docker must be up and running)
+	-> execute following commands
+		terraform init -> initializes your terraform scripts
+		terraform plan -> it is like dry run. If we want write the output of this command, we need to execute, terraform plan -out <file-name>
+		terrafrom apply --auto-approve -> deploys your infrastructure. creates 'terraform.tfstate' file
+		terraform destroy --auto-approve -> destroys your infrastructure
+		
+2. What are providers ?
+
+	- We can deploy our infrastructure any where in the mensioned platforms in the hashicorp doc.
+	- Ex: aws, azure, docker, kubernetes etc.
+	- Even we can deploy our infrastructure in multiple cloud regions.
+			example :
+				provider "aws" {
+					alias	=	"us-east-1"
+					region	=	"us-east-1"
+				}
+				provider "aws" {
+					alias	=	"us-west-2"
+					region	=	"us-west-2"
+				}
+				resource "aws_sns_topic" "topic-us-east" {
+					provider	=	aws.us-east-1
+					name		=	"topic-us-east"
+				}
+				resource "aws_sns_topic" "topic-us-west" {
+					provider	=	aws.us-west-2
+					name		=	"topic-us-west"
+				}
+	- TF_LOG=TRACE (to enable in verbose mode)
+	
+3. What are terraform workspaces ?
+
+	- To check workspaces, terraform workspace list
+	- default workspace is default
+	- to create workspace, terraform workspace new <name>
+	- to change workspace, terraform workspace select <ws-name>
+	- workspaces are isolated. It means that, once infra is deployed using one workspace, tfstate file will not be avaialble in the other workspace
+
+4. How to store terraform backend configuration ?
+
+	- It is important to store terraform backend configuartion to back up the infrastructure.
+	- We store backend configuration in any cloud, github private repositories.
+	- We need to create AWS s3 bucket or  Azure storage account or IBM COS bucket or Terraform cloud ( organization, workspace , variables, token)
+	- log in to the desired cloud using credentials or token
+	- We need to update terraform backend information in main.tf file
+			ex :
+				terraform {
+					backend "remote" {
+						organization	= "name-of-cloud-org"
+						workspaces {
+							name	=	"name-of-ws"
+						}
+					}
+				}
+				provider "aws" {
+					alias	=	"us-east-1"
+					region	=	"us-east-1"
+				}
+				resource "aws_instance" "vm" {
+					ami			=	""
+					subnet_id	=	""
+					instance_type= 	""
+					tags		=	{
+						Name	=	"my-fisrt-tf-node"
+					}					
+				}
+	- When we execute terraform init, it initializes the backend
+	- When we execute terraform apply, tfstate file creates in the particular cloud resource.
+
+5. What are terraform modules ?
+
+	-  Terraform module is a set of Terraform configuration files in a single directory.
+	-  It encapsulates the configuration and reuse the configuration.
+	-  It is good solution to deploy complex cloud infrastructure.
+
+			ex: tf-project[main.tf,ouput.tf,variable.tf]->modules->vpc[main.tf,ouput.tf,variable.tf]
+			
+6. How to manage terraform statefiles ?
+
+	- Suppose if we deploy any infra using using terraform, it creates terraform.tfstate file
+	- If we modify our infra and redeploy the infra. it creates another terraform.tfstate file. The old terraform.tfstate file is renamed as
+	   terraform.tfstate.backup
+	- using terraform.tfstate.backup, we can rollback our infrastructure if it is needed
+	- to view the tfstate files, terraform state list
+	
+7. How to format the code.
+
+		terraform fmt -recurssive
