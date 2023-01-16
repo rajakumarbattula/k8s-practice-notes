@@ -1,0 +1,61 @@
+ssh_key_path: C:\SUREDELETELATER\K8SB10\RKE\LaptopKey.pem
+cluster_name: k8sb10-cluster
+kubernetes_version: v1.21.9-rancher1-1
+nodes:
+  - address: 3.220.167.43
+    #internal_address: 172.16.22.12
+    user: ubuntu
+    role: [controlplane, worker, etcd]
+  - address: 44.202.125.25
+    #internal_address: 172.16.32.37
+    user: ubuntu
+    role: [controlplane, worker, etcd]
+  # - address: 34.229.84.128
+  #   #internal_address: 172.16.42.73
+  #   user: ubuntu
+  #   role: [controlplane, worker, etcd]
+  - address: 3.237.180.55
+    #internal_address: 172.16.42.73
+    user: ubuntu
+    role: [controlplane, worker, etcd]
+  - address: 3.237.84.147
+    hostname_override: workernode1
+    #internal_address: 172.16.42.73
+    user: ubuntu
+    role: [worker]
+  - address: 3.238.21.8
+    hostname_override: workernode2
+    #internal_address: 172.16.42.73
+    user: ubuntu
+    role: [worker]
+
+services:
+  etcd:
+    snapshot: true
+    creation: 6h
+    retention: 24h
+
+# Required for external TLS termination with
+# ingress-nginx v0.22+
+ingress:
+  provider: nginx
+  options:
+    use-forwarded-headers: "true"
+
+network:
+  plugin: flannel
+  options:
+    flannel_iface: eth0
+    flannel_backend_type: vxlan
+    flannel_autoscaler_priority_class_name: system-cluster-critical # Available as of RKE v1.2.6+
+    flannel_priority_class_name: system-cluster-critical # Available as of RKE v1.2.6+
+
+#systems manager script or userdata
+#\!/bin/bash
+# sudo curl https://get.docker.com | bash
+# sudo usermod -a -G docker ubuntu
+# sudo usermod -a -G root ubuntu
+# sudo systemctl daemon-reload
+# sudo systemctl restart docker
+# sudo reboot
+#sudo usermod -a -G docker ubuntu && sudo usermod -a -G root ubuntu && sudo systemctl daemon-reload && sudo systemctl restart docker && sudo reboot

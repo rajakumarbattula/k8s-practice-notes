@@ -1,0 +1,47 @@
+#Blocking Traffic Between The Util Pods
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: alpha-deny-all
+  namespace: alpha
+spec:
+  podSelector:
+    matchLabels:
+      app: alphanginx01
+  ingress: []
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: bravo-deny-all
+  namespace: bravo
+spec:
+  podSelector:
+    matchLabels:
+      app: bravonginx01
+  ingress: []
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: charlie-deny-all
+  namespace: charlie
+spec:
+  podSelector:
+    matchLabels:
+      app: charlieginx01
+  ingress: []
+  
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: mysqldb-deny-all
+  namespace: mysqldb
+spec:
+  podSelector:
+    matchLabels:
+      app: mysql
+  ingress: []
