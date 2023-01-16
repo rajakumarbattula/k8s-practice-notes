@@ -1,0 +1,119 @@
+ku create deployment appv1 --image=sreeharshav/rollingupdate:v1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp
+  name: appv1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1
+    spec:
+      containers:
+      - image: sreeharshav/testcontainer:v1
+        name: rollingupdate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp
+  name: appv2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v2
+    spec:
+      containers:
+      - image: sreeharshav/testcontainer:v1
+        name: rollingupdate
+		
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    name: http
+  selector:
+    app: myapp
+
+		
+ku create deployment appv2 --image=sreeharshav/rollingupdate:v5
+ku expose deployment appv1 --port=80 --target-port=80
+
+---GATEWAY---
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bluegreen-app-gateway
+spec:
+  selector:
+    istio: ingressgateway # label of ingressgateway deployed above
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "bluegreen.awsb35.xyz"
+	
+---DESTINATION-RILE---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: myapp
+spec:
+  host: myapp
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+	  
+---VirtualService---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: myapp
+spec:
+  hosts:
+  - "bluegreen.awsb35.xyz"
+  gateways:
+  - bluegreen-app-gateway
+  http:
+    - route:
+      - destination:
+          host: myapp
+          subset: v1
+        weight: 50
+      - destination:
+          host: myapp
+          subset: v2
+        weight: 50 
+		
+		
+while true; do curl -sL http://bluegreen.awsb35.xyz/ | grep -i FQDN; sleep 1; done

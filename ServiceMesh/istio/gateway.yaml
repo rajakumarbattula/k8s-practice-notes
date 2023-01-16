@@ -1,0 +1,59 @@
+Before creating Gateway and Virtual Service we need to create ingress controller.
+Refer to Install_istio document before creating any Gateway or VirtualService.
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: app-gateway
+spec:
+  selector:
+    istio: ingressgateway # label of ingressgateway deployed above
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "vote.awsb35.xyz"
+    - "result.awsb35.xyz"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vote
+spec:
+  hosts:
+  - "vote.awsb35.xyz"
+  gateways:
+  - app-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: vote
+        port:
+          number: 80
+          
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: result
+spec:
+  hosts:
+  - "result.awsb35.xyz"
+  gateways:
+  - app-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: result
+        port:
+          number: 80
