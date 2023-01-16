@@ -1,0 +1,36 @@
+#Deploying Nginx
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deploy01
+  name: deploy01
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: deploy01
+  template:
+    metadata:
+      labels:
+        app: deploy01
+    spec:
+      containers:
+      - image: sreeharshav/rollingupdate:v5
+        name: rollingupdate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: deploy01
+  name: deploy01
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: deploy01
+  type: NodePort
